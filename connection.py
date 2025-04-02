@@ -25,5 +25,9 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        time.sleep(10)
+        time.sleep(10) # Esto en realidad no debería terminar la conexión con 
+        # el cliente, pero no se implementó el protocolo completo. Debería estar dentro
+        # de un loop y solo salir cuando se llame a quit o se produzca una excepción fatal (las tipo 100).
+
+        
 
