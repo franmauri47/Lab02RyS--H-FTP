@@ -18,16 +18,85 @@ class Connection(object):
     def __init__(self, socket, directory):
         self.socket = socket
         self.directory = directory
+        self.buffer = ''
+        self.connected = True
 
         pass
+
+    def recv(self, timeout=None):
+        self.socket.settimeout(timeout)
+        data = self.socket.recv(4096).decode("ascii")
+        self.buffer += data
+
+        if len(data) == 0:
+            self.connected = False
+
+
+    # Habría que revisar cuestiones como evitar DOS, comandos inválidos, etc.
+    # También revisar la utilidad del timeout del lado del servidor. 
+    def read_line(self, timeout=None):
+        """
+        Espera datos hasta obtener una línea completa delimitada por el
+        terminador del protocolo.
+
+        Devuelve la línea, eliminando el terminador y los espacios en blanco
+        al principio y al final.
+        """
+        while not EOL in self.buffer and self.connected:
+            if timeout is not None:
+                t1 = time.process_time()
+            self.recv(timeout)
+            if timeout is not None:
+                t2 = time.process_time()
+                timeout -= t2 - t1
+                t1 = t2
+        if EOL in self.buffer:
+            response, self.buffer = self.buffer.rsplit(EOL, 1)
+            print(response)
+            print(self.buffer)
+            return response.strip()
+        else:
+            self.connected = False
+            return ""
 
     def handle(self):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        time.sleep(10) # Esto en realidad no debería terminar la conexión con 
-        # el cliente, pero no se implementó el protocolo completo. Debería estar dentro
-        # de un loop y solo salir cuando se llame a quit o se produzca una excepción fatal (las tipo 100).
+        while True:
+            # Si no esta conectado, salimos del loop
+            if not self.connected:
+                break
 
-        
+            try:
+                # Leemos el mensaje entrante
+                command = self.read_line()
+
+                # print BORRAR DESPUES solo debug BORRAR DESPUES solo debug BORRAR DESPUES solo debug BORRAR DESPUES solo debug
+                # print(command)
+
+            except (socket.timeout, ConnectionResetError, OSError) as e:
+                print(f"Error de red: {e}")
+                break
+            except Exception as e:
+                print(f"Error inesperado: {e}")
+                break
+
+            command_parts = command.split()
+            if len(command_parts) == 0:
+                continue
+
+            match command[0]:
+                # Si el comando es "quit", cerramos la conexión
+                case "quit":
+                    self.socket.send(f"{CODE_OK} Bye.\r\n".encode())
+                    break
+                case "":
+                    break
+                case _:
+                    self.socket.send(
+                        f"{INVALID_COMMAND} {error_messages[INVALID_COMMAND]}\r\n".encode()
+                    )
+            
+        self.socket.close()
 
