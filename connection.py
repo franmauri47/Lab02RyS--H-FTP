@@ -6,7 +6,6 @@
 import socket
 from constants import *
 from base64 import b64encode
-import time
 
 class Connection(object):
     """
@@ -23,8 +22,7 @@ class Connection(object):
 
         pass
 
-    def recv(self, timeout=None):
-        self.socket.settimeout(timeout)
+    def recv(self):
         data = self.socket.recv(4096).decode("ascii")
         self.buffer += data
 
@@ -33,8 +31,7 @@ class Connection(object):
 
 
     # Habría que revisar cuestiones como evitar DOS, comandos inválidos, etc.
-    # También revisar la utilidad del timeout del lado del servidor. 
-    def read_line(self, timeout=None):
+    def read_line(self):
         """
         Espera datos hasta obtener una línea completa delimitada por el
         terminador del protocolo.
@@ -43,21 +40,15 @@ class Connection(object):
         al principio y al final.
         """
         while not EOL in self.buffer and self.connected:
-            if timeout is not None:
-                t1 = time.process_time()
-            self.recv(timeout)
-            if timeout is not None:
-                t2 = time.process_time()
-                timeout -= t2 - t1
-                t1 = t2
-        if EOL in self.buffer:
-            response, self.buffer = self.buffer.rsplit(EOL, 1)
-            print(response)
-            print(self.buffer)
-            return response.strip()
-        else:
-            self.connected = False
-            return ""
+            self.recv()
+            if EOL in self.buffer:
+                response, self.buffer = self.buffer.rsplit(EOL, 1)
+                print(response)
+                print(f"{self.buffer}")
+                return response.strip()
+            else:
+                self.connected = False
+                return ""
 
     def handle(self):
         """
