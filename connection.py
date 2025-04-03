@@ -42,6 +42,9 @@ class Connection(object):
                 response, self.buffer = self.buffer.split(EOL, 1)
                 return response.strip()
             self.recv()
+            if not self.buffer:
+                raise ConnectionResetError("Conexión terminada repentinamente "
+                                            "por el cliente.")
         return ""
 
     def handle(self):
