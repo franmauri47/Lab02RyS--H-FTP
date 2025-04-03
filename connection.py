@@ -40,16 +40,12 @@ class Connection(object):
         Devuelve la línea, eliminando el terminador y los espacios en blanco
         al principio y al final.
         """
-        while not EOL in self.buffer and self.connected:
-            self.recv()
+        while self.connected:
             if EOL in self.buffer:
-                response, self.buffer = self.buffer.rsplit(EOL, 1)
-                print(response)
-                print(f"{self.buffer}")
+                response, self.buffer = self.buffer.split(EOL, 1)
                 return response.strip()
-            else:
-                self.connected = False
-                return ""
+            self.recv()
+        return ""
 
     def handle(self):
         """
