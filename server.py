@@ -8,6 +8,7 @@
 
 import optparse
 import socket
+import sys
 import connection
 from constants import *
 
@@ -25,6 +26,7 @@ class Server(object):
         # a una dirección y puerto, etc.
         self.directory = directory
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((addr, port))
 
         # Escuchar una conexión a la vez

@@ -6,6 +6,7 @@
 import socket
 from constants import *
 from base64 import b64encode
+from cmd_handlers import *
 
 class Connection(object):
     """
@@ -75,19 +76,21 @@ class Connection(object):
 
             command_parts = command.split()
             if len(command_parts) == 0:
-                continue
+                self.socket.send((f"{BAD_REQUEST}" 
+                                 f" {error_messages[BAD_REQUEST]}:"
+                                 " No se pudo parsear el comando\r\n")
+                                 .encode())
+                break
 
-            match command[0]:
+            match command_parts[0]:
                 # Si el comando es "quit", cerramos la conexión
                 case "quit":
-                    self.socket.send(f"{CODE_OK} Bye.\r\n".encode())
-                    break
-                case "":
-                    break
+                    quit_handler(self, command_parts)
                 case _:
                     self.socket.send(
-                        f"{INVALID_COMMAND} {error_messages[INVALID_COMMAND]}\r\n".encode()
+                        f"{INVALID_COMMAND}" 
+                        f" {error_messages[INVALID_COMMAND]}\r\n"
+                        .encode()
                     )
             
         self.socket.close()
-
