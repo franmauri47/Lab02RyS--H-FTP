@@ -60,9 +60,6 @@ class Connection(object):
                 # Leemos el mensaje entrante
                 command = self.read_line()
 
-                # print BORRAR DESPUES solo debug BORRAR DESPUES solo debug BORRAR DESPUES solo debug BORRAR DESPUES solo debug
-                # print(command)
-
             except (socket.timeout, ConnectionResetError, OSError) as e:
                 print(f"Error de red: {e}")
                 break
@@ -79,7 +76,6 @@ class Connection(object):
                 break
 
             match command_parts[0]:
-                # Si el comando es "quit", cerramos la conexión
                 case "quit":
                     quit_handler(self, command_parts)
                 case _:
