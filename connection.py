@@ -24,11 +24,8 @@ class Connection(object):
         pass
 
     def recv(self):
-        data = self.socket.recv(4096).decode("ascii")
+        data = self.socket.recv(BUFFER_LIMIT).decode("ascii")
         self.buffer += data
-
-        if len(data) == 0:
-            self.connected = False
 
 
     # Habría que revisar cuestiones como evitar DOS, comandos inválidos, etc.
