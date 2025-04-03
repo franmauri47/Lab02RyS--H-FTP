@@ -78,6 +78,8 @@ class Connection(object):
             match command_parts[0]:
                 case "quit":
                     quit_handler(self, command_parts)
+                case "get_file_listing":
+                    file_listing_handler(self, command_parts)
                 case _:
                     self.socket.send(
                         f"{INVALID_COMMAND}" 
