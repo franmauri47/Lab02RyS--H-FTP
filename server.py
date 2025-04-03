@@ -8,6 +8,7 @@
 
 import optparse
 import socket
+import sys
 import connection
 from constants import *
 
@@ -23,6 +24,15 @@ class Server(object):
         print("Serving %s on %s:%s." % (directory, addr, port))
         # FALTA: Crear socket del servidor, configurarlo, asignarlo
         # a una dirección y puerto, etc.
+        self.directory = directory
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.socket.bind((addr, port))
+
+        # Escuchar una conexión a la vez
+        self.socket.listen(1)
+        print(f"Socket creado y enlazado a {addr}:{port}.")
+        print("Esperando conexiones...")
 
     def serve(self):
         """
@@ -30,9 +40,19 @@ class Server(object):
         y se espera a que concluya antes de seguir.
         """
         while True:
-            pass
-            # FALTA: Aceptar una conexión al server, crear una
-            # Connection para la conexión y atenderla hasta que termine.
+            try:
+                # Aceptar conexión
+                client_socket, client_address = self.socket.accept()
+                print(f"Conexión aceptada de {client_address}")
+
+                conn = connection.Connection(client_socket, self.directory)
+                conn.handle()
+ 
+                print("Conexión terminada.")
+                client_socket.close()
+            except (socket.error, KeyboardInterrupt) as e:
+                print(f"Error o interrupción: {e}")
+                break
 
 
 def main():
@@ -63,6 +83,18 @@ def main():
 
     server = Server(options.address, port, options.datadir)
     server.serve()
+
+    # Para ejecutar una prueba, hay que ejecutar server.py y luego
+    # en otra terminal "telnet localhost 19500", notar que server.py 
+    # se puede ejecutar en distintos puertos y direcciones (los del ejemplo de arriba
+    # son los que estan por defecto si se ejecuta "python3 server.py"), por lo que si se pasa 
+    # una de esas flags, hay que usar el mismo puerto y dirección en telnet.
+
+    #por ejemplo: python3 server.py -a 127.0.0.1 -p 8080
+    #en la otra terminal: telnet 127.0.0.1 8080
+
+    # la flag de dataDir solo indica a que directorio tiene acceso el cliente que se conecte, 
+    # yo estuve probando con el directorio por defecto, ya que no tenemos comandos implementados
 
 
 if __name__ == '__main__':
