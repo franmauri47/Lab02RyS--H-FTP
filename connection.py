@@ -86,6 +86,8 @@ class Connection(object):
                 # Si el comando es "quit", cerramos la conexión
                 case "quit":
                     quit_handler(self, command_parts)
+                case "get_file_listing":
+                    file_listing_handler(self, command_parts)
                 case _:
                     self.socket.send(
                         f"{INVALID_COMMAND}" 
