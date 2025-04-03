@@ -25,7 +25,7 @@ def file_listing_handler(cnn, command_parts):
     
     try:
         files = listdir(cnn.directory)
-        response = f"{CODE_OK} {error_messages[CODE_OK]} {EOL}"
+        response = f"{CODE_OK} {error_messages[CODE_OK]}{EOL}"
         for file in files:
             response += f"{file}{EOL}"
         response += f"{EOL}"
