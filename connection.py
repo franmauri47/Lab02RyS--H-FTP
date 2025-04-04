@@ -92,6 +92,8 @@ class Connection(object):
                     file_listing_handler(self, command_parts)
                 case "get_metadata":
                     get_metadata_handler(self, command_parts)
+                case "get_slice":
+                    get_slice_handler(self, command_parts)
                 case _:
                     self.socket.send(
                         f"{INVALID_COMMAND}" 

@@ -3,6 +3,7 @@ from constants import *
 from os import listdir, stat
 from os.path import join, exists
 from utilities import *
+from base64 import b64encode
 
 def quit_handler(cnn, command_parts):
     """
@@ -56,6 +57,45 @@ def get_metadata_handler(cnn, command_parts):
         file_size = stat(filepath).st_size
         response = f"{CODE_OK} {error_messages[CODE_OK]} {EOL}"
         response += f"{file_size}b {EOL}" 
+        cnn.socket.send(response.encode())
+    except:
+        send_response(cnn, INTERNAL_ERROR)
+
+
+def get_slice_handler(cnn, command_parts):
+    """
+    Maneja el comando get_slice.
+    """
+    if not check_argument_count(cnn, command_parts, 4):
+        return
+    
+    filename, offset_str = command_parts[1], command_parts[2]
+    size_str = command_parts[3]
+    
+    try:
+        offset = int(offset_str)
+        size = int(size_str)
+        if offset < 0 or size < 0:
+            send_response(cnn, BAD_REQUEST)
+            return
+    except ValueError:
+        send_response(cnn, BAD_REQUEST)
+        return
+
+    filepath = join(cnn.directory, filename)
+
+    if not exists(filepath):
+        send_response(cnn, FILE_NOT_FOUND)
+        return
+
+    try:
+        with open(filepath, 'rb') as f:
+            f.seek(offset)
+            chunk = f.read(size)
+            encoded_chunk = b64encode(chunk).decode("ascii")
+
+        response = f"{CODE_OK} {error_messages[CODE_OK]} {EOL}"
+        response += f"{encoded_chunk} {EOL}"
         cnn.socket.send(response.encode())
     except:
         send_response(cnn, INTERNAL_ERROR)
