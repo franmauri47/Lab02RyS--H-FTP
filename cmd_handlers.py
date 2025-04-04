@@ -56,7 +56,7 @@ def get_metadata_handler(cnn, command_parts):
     try:
         file_size = stat(filepath).st_size
         response = f"{CODE_OK} {error_messages[CODE_OK]} {EOL}"
-        response += f"{file_size}b {EOL}" 
+        response += f"{file_size}{EOL}" 
         cnn.socket.send(response.encode())
     except:
         send_response(cnn, INTERNAL_ERROR)
@@ -76,10 +76,10 @@ def get_slice_handler(cnn, command_parts):
         offset = int(offset_str)
         size = int(size_str)
         if offset < 0 or size < 0:
-            send_response(cnn, BAD_REQUEST)
+            send_response(cnn, INVALID_ARGUMENTS)
             return
     except ValueError:
-        send_response(cnn, BAD_REQUEST)
+        send_response(cnn, INVALID_ARGUMENTS)
         return
 
     filepath = join(cnn.directory, filename)

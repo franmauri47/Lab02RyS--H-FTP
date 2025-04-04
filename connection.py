@@ -83,6 +83,7 @@ class Connection(object):
                                  f" {error_messages[BAD_REQUEST]}:"
                                  " No se pudo parsear el comando\r\n")
                                  .encode())
+                self.connected = False
                 continue
 
             match command_parts[0]:
@@ -95,6 +96,12 @@ class Connection(object):
                 case "get_slice":
                     get_slice_handler(self, command_parts)
                 case _:
+                    if(len(command_parts) > 1):
+                        self.socket.send(
+                            f"{BAD_EOL} {error_messages[BAD_EOL]}\r\n"
+                            .encode())
+                        self.connected = False
+                        
                     self.socket.send(
                         f"{INVALID_COMMAND}" 
                         f" {error_messages[INVALID_COMMAND]}\r\n"
