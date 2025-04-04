@@ -54,18 +54,28 @@ class Connection(object):
         while True:
             # Si no esta conectado, salimos del loop
             if not self.connected:
+                self.socket.close()
                 break
 
             try:
                 # Leemos el mensaje entrante
+                error = False
                 command = self.read_line()
-
-            except (socket.timeout, ConnectionResetError, OSError) as e:
+            except (ConnectionResetError, OSError) as e:
                 print(f"Error de red: {e}")
-                break
+                error = True
+            except UnicodeDecodeError as e:
+                self.socket.send(
+                (f"{BAD_REQUEST} {error_messages[BAD_REQUEST]}:" 
+                " El comando contiene caracteres no-ASCII.\r\n").encode())
+                error = True
             except Exception as e:
                 print(f"Error inesperado: {e}")
-                break
+                error = True
+            finally:
+                if error:
+                    self.connected = False
+                    break
 
             command_parts = command.split()
             if len(command_parts) == 0:
@@ -73,7 +83,7 @@ class Connection(object):
                                  f" {error_messages[BAD_REQUEST]}:"
                                  " No se pudo parsear el comando\r\n")
                                  .encode())
-                break
+                continue
 
             match command_parts[0]:
                 case "quit":
@@ -86,5 +96,3 @@ class Connection(object):
                         f" {error_messages[INVALID_COMMAND]}\r\n"
                         .encode()
                     )
-            
-        self.socket.close()
