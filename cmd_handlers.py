@@ -1,7 +1,7 @@
 import connection
 from constants import *
 from os import listdir, stat
-from os.path import join, exists
+from os.path import join, exists, getsize
 from utilities import *
 from base64 import b64encode
 
@@ -86,6 +86,12 @@ def get_slice_handler(cnn, command_parts):
 
     if not exists(filepath):
         send_response(cnn, FILE_NOT_FOUND)
+        return
+
+    file_size = getsize(filepath)
+
+    if offset + size > file_size:
+        send_response(cnn, BAD_OFFSET)
         return
 
     try:
