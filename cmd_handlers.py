@@ -37,10 +37,10 @@ def file_listing_handler(cnn, command_parts):
 
     return
 
+
 def get_metadata_handler(cnn, command_parts):
     """
     Maneja el comando get_metadata.
-    Devuelve el tamaño en bytes del archivo solicitado.
     """
     if not check_argument_count(cnn, command_parts, 2):
         return
