@@ -80,6 +80,8 @@ class Connection(object):
                     quit_handler(self, command_parts)
                 case "get_file_listing":
                     file_listing_handler(self, command_parts)
+                case "get_metadata":
+                    get_metadata_handler(self, command_parts)
                 case _:
                     self.socket.send(
                         f"{INVALID_COMMAND}" 
