@@ -39,6 +39,9 @@ class Connection(object):
         """
         while self.connected:
             if EOL in self.buffer:
+                if "\n" in self.buffer and "\r" in self.buffer:
+                    if self.buffer.index("\n") != self.buffer.index("\r") + 1:
+                        raise ValueError()
                 response, self.buffer = self.buffer.split(EOL, 1)
                 return response.strip()
             self.recv()
@@ -69,6 +72,10 @@ class Connection(object):
                 (f"{BAD_REQUEST} {error_messages[BAD_REQUEST]}:" 
                 " El comando contiene caracteres no-ASCII.\r\n").encode())
                 error = True
+            except ValueError as e:
+                self.socket.send(
+                    (f"{BAD_EOL} {error_messages[BAD_EOL]}\r\n").encode())
+                error = True
             except Exception as e:
                 print(f"Error inesperado: {e}")
                 error = True
@@ -83,6 +90,7 @@ class Connection(object):
                                  f" {error_messages[BAD_REQUEST]}:"
                                  " No se pudo parsear el comando\r\n")
                                  .encode())
+                self.connected = False
                 continue
 
             match command_parts[0]:
@@ -90,6 +98,10 @@ class Connection(object):
                     quit_handler(self, command_parts)
                 case "get_file_listing":
                     file_listing_handler(self, command_parts)
+                case "get_metadata":
+                    get_metadata_handler(self, command_parts)
+                case "get_slice":
+                    get_slice_handler(self, command_parts)
                 case _:
                     self.socket.send(
                         f"{INVALID_COMMAND}" 
