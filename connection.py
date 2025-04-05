@@ -3,10 +3,22 @@
 # Copyright 2014 Carlos Bederián
 # $Id: connection.py 455 2011-05-01 00:32:09Z carlos $
 
-import socket
-from constants import *
-from base64 import b64encode
-from cmd_handlers import *
+
+from constants import (
+    BUFFER_LIMIT,
+    BAD_REQUEST,
+    BAD_EOL,
+    INVALID_COMMAND
+)
+from cmd_handlers import (
+    EOL,
+    error_messages,
+    quit_handler,
+    file_listing_handler,
+    get_metadata_handler,
+    get_slice_handler
+)
+
 
 class Connection(object):
     """
@@ -27,7 +39,6 @@ class Connection(object):
         data = self.socket.recv(BUFFER_LIMIT).decode("ascii")
         self.buffer += data
 
-
     # Habría que revisar cuestiones como evitar DOS, comandos inválidos, etc.
     def read_line(self):
         """
@@ -46,8 +57,10 @@ class Connection(object):
                 return response.strip()
             self.recv()
             if not self.buffer:
-                raise ConnectionResetError("Conexión terminada repentinamente "
-                                            "por el cliente.")
+                raise ConnectionResetError(
+                    "Conexión terminada repentinamente "
+                    "por el cliente."
+                )
         return ""
 
     def handle(self):
@@ -68,11 +81,14 @@ class Connection(object):
                 print(f"Error de red: {e}")
                 error = True
             except UnicodeDecodeError as e:
+                print(f"Error de codificación: {e}")
                 self.socket.send(
-                (f"{BAD_REQUEST} {error_messages[BAD_REQUEST]}:" 
-                " El comando contiene caracteres no-ASCII.\r\n").encode())
+                    (f"{BAD_REQUEST} {error_messages[BAD_REQUEST]}:"
+                     " El comando contiene caracteres no-ASCII.\r\n").encode()
+                )
                 error = True
             except ValueError as e:
+                print(f"Error de valor: {e}")
                 self.socket.send(
                     (f"{BAD_EOL} {error_messages[BAD_EOL]}\r\n").encode())
                 error = True
@@ -86,10 +102,10 @@ class Connection(object):
 
             command_parts = command.split()
             if len(command_parts) == 0:
-                self.socket.send((f"{BAD_REQUEST}" 
-                                 f" {error_messages[BAD_REQUEST]}:"
-                                 " No se pudo parsear el comando\r\n")
-                                 .encode())
+                self.socket.send((
+                    f"{BAD_REQUEST} {error_messages[BAD_REQUEST]}:"
+                    " No se pudo parsear el comando\r\n"
+                ).encode())
                 self.connected = False
                 continue
 
@@ -104,7 +120,7 @@ class Connection(object):
                     get_slice_handler(self, command_parts)
                 case _:
                     self.socket.send(
-                        f"{INVALID_COMMAND}" 
+                        f"{INVALID_COMMAND}"
                         f" {error_messages[INVALID_COMMAND]}\r\n"
                         .encode()
                     )
