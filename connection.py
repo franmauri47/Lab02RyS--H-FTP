@@ -108,3 +108,6 @@ class Connection(object):
                         f" {error_messages[INVALID_COMMAND]}\r\n"
                         .encode()
                     )
+
+        print("Conexión terminada.")
+        self.socket.close()
