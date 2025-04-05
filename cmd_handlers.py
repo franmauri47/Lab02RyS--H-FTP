@@ -1,9 +1,21 @@
-import connection
-from constants import *
+from constants import (
+    CODE_OK,
+    EOL,
+    INTERNAL_ERROR,
+    FILE_NOT_FOUND,
+    BAD_OFFSET,
+    INVALID_ARGUMENTS,
+    error_messages
+)
+from utilities import (
+    check_argument_count,
+    check_directory_exists,
+    send_response
+)
+from base64 import b64encode
 from os import listdir, stat
 from os.path import join, exists, getsize
-from utilities import *
-from base64 import b64encode
+
 
 def quit_handler(cnn, command_parts):
     """
@@ -21,10 +33,8 @@ def file_listing_handler(cnn, command_parts):
     """
     if not check_argument_count(cnn, command_parts, 1):
         return
-    
     if not check_directory_exists(cnn, cnn.directory):
         return
-    
     try:
         files = listdir(cnn.directory)
         response = f"{CODE_OK} {error_messages[CODE_OK]}{EOL}"
@@ -32,7 +42,8 @@ def file_listing_handler(cnn, command_parts):
             response += f"{file}{EOL}"
         response += f"{EOL}"
         cnn.socket.send(response.encode())
-    except:
+    except Exception as e:
+        print(f"Error al listar archivos: {e}")
         send_response(cnn, INTERNAL_ERROR)
         return
 
@@ -45,7 +56,7 @@ def get_metadata_handler(cnn, command_parts):
     """
     if not check_argument_count(cnn, command_parts, 2):
         return
-    
+
     filename = command_parts[1]
     filepath = join(cnn.directory, filename)
 
@@ -56,9 +67,10 @@ def get_metadata_handler(cnn, command_parts):
     try:
         file_size = stat(filepath).st_size
         response = f"{CODE_OK} {error_messages[CODE_OK]} {EOL}"
-        response += f"{file_size}{EOL}" 
+        response += f"{file_size}{EOL}"
         cnn.socket.send(response.encode())
-    except:
+    except Exception as e:
+        print(f"Error al obtener metadatos del archivo: {e}")
         send_response(cnn, INTERNAL_ERROR)
 
 
@@ -68,10 +80,10 @@ def get_slice_handler(cnn, command_parts):
     """
     if not check_argument_count(cnn, command_parts, 4):
         return
-    
+
     filename, offset_str = command_parts[1], command_parts[2]
     size_str = command_parts[3]
-    
+
     try:
         offset = int(offset_str)
         size = int(size_str)
@@ -103,5 +115,6 @@ def get_slice_handler(cnn, command_parts):
         response = f"{CODE_OK} {error_messages[CODE_OK]} {EOL}"
         response += f"{encoded_chunk} {EOL}"
         cnn.socket.send(response.encode())
-    except:
+    except Exception as e:
+        print(f"Error al leer el archivo: {e}")
         send_response(cnn, INTERNAL_ERROR)
