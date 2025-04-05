@@ -10,6 +10,7 @@ import optparse
 import socket
 import sys
 import connection
+import threading
 from constants import *
 
 
@@ -46,7 +47,9 @@ class Server(object):
                 print(f"Conexión aceptada de {client_address}")
 
                 conn = connection.Connection(client_socket, self.directory)
-                conn.handle()
+                thread = threading.Thread(target=conn.handle(), 
+                                          args=(client_socket, ))
+                thread.start()
  
                 print("Conexión terminada.")
                 client_socket.close()
