@@ -1,5 +1,11 @@
-from constants import *
+from constants import (
+    INVALID_ARGUMENTS,
+    INTERNAL_ERROR,
+    error_messages,
+    EOL
+)
 from os import path
+
 
 def check_argument_count(cnn, command_parts, expected_count):
     """
