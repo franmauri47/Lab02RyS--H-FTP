@@ -47,8 +47,7 @@ class Server(object):
                 print(f"Conexión aceptada de {client_address}")
 
                 conn = connection.Connection(client_socket, self.directory)
-                thread = threading.Thread(target=conn.handle(), 
-                                          args=(client_socket, ))
+                thread = threading.Thread(target=conn.handle)
                 thread.start()
  
                 print("Conexión terminada.")
