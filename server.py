@@ -50,8 +50,6 @@ class Server(object):
                 thread = threading.Thread(target=conn.handle)
                 thread.start()
  
-                print("Conexión terminada.")
-                client_socket.close()
             except (socket.error, KeyboardInterrupt) as e:
                 print(f"Error o interrupción: {e}")
                 break
