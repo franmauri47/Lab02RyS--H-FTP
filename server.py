@@ -11,7 +11,11 @@ import socket
 import sys
 import connection
 import threading
-from constants import *
+from constants import (
+    DEFAULT_PORT,
+    DEFAULT_DIR,
+    DEFAULT_ADDR,
+)
 
 
 class Server(object):
@@ -49,7 +53,7 @@ class Server(object):
                 conn = connection.Connection(client_socket, self.directory)
                 thread = threading.Thread(target=conn.handle)
                 thread.start()
- 
+
             except (socket.error, KeyboardInterrupt) as e:
                 print(f"Error o interrupción: {e}")
                 break
@@ -85,16 +89,19 @@ def main():
     server.serve()
 
     # Para ejecutar una prueba, hay que ejecutar server.py y luego
-    # en otra terminal "telnet localhost 19500", notar que server.py 
-    # se puede ejecutar en distintos puertos y direcciones (los del ejemplo de arriba
-    # son los que estan por defecto si se ejecuta "python3 server.py"), por lo que si se pasa 
+    # en otra terminal "telnet localhost 19500", notar que server.py
+    # se puede ejecutar en distintos puertos y direcciones
+    # (los del ejemplo de arriba son los que estan por defecto si
+    # se ejecuta "python3 server.py"), por lo que si se pasa
     # una de esas flags, hay que usar el mismo puerto y dirección en telnet.
 
-    #por ejemplo: python3 server.py -a 127.0.0.1 -p 8080
-    #en la otra terminal: telnet 127.0.0.1 8080
+    # por ejemplo: python3 server.py -a 127.0.0.1 -p 8080
+    # en la otra terminal: telnet 127.0.0.1 8080
 
-    # la flag de dataDir solo indica a que directorio tiene acceso el cliente que se conecte, 
-    # yo estuve probando con el directorio por defecto, ya que no tenemos comandos implementados
+    # la flag de dataDir solo indica a que directorio
+    # tiene acceso el cliente que se conecte,
+    # yo estuve probando con el directorio por defecto,
+    # ya que no tenemos comandos implementados
 
 
 if __name__ == '__main__':
