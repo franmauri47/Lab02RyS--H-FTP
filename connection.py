@@ -8,15 +8,11 @@ from constants import (
     BUFFER_LIMIT,
     BAD_REQUEST,
     BAD_EOL,
-    INVALID_COMMAND
+    error_messages
 )
 from cmd_handlers import (
     EOL,
-    error_messages,
-    quit_handler,
-    file_listing_handler,
-    get_metadata_handler,
-    get_slice_handler
+    Command_handler
 )
 
 
@@ -32,6 +28,7 @@ class Connection(object):
         self.directory = directory
         self.buffer = ''
         self.connected = True
+        self.cmd_handler = Command_handler(self)
 
         pass
 
@@ -50,9 +47,10 @@ class Connection(object):
         """
         while self.connected:
             if EOL in self.buffer:
-                if "\n" in self.buffer and "\r" in self.buffer:
-                    if self.buffer.index("\n") != self.buffer.index("\r") + 1:
-                        raise ValueError()
+                if ("\n" in self.buffer and "\r" in self.buffer
+                        and self.buffer.index("\n") !=
+                        self.buffer.index("\r")+1):
+                    raise ValueError()
                 response, self.buffer = self.buffer.split(EOL, 1)
                 return response.strip()
             self.recv()
@@ -111,19 +109,15 @@ class Connection(object):
 
             match command_parts[0]:
                 case "quit":
-                    quit_handler(self, command_parts)
+                    self.cmd_handler.quit_handler(command_parts)
                 case "get_file_listing":
-                    file_listing_handler(self, command_parts)
+                    self.cmd_handler.file_listing_handler(command_parts)
                 case "get_metadata":
-                    get_metadata_handler(self, command_parts)
+                    self.cmd_handler.get_metadata_handler(command_parts)
                 case "get_slice":
-                    get_slice_handler(self, command_parts)
+                    self.cmd_handler.get_slice_handler(command_parts)
                 case _:
-                    self.socket.send(
-                        f"{INVALID_COMMAND}"
-                        f" {error_messages[INVALID_COMMAND]}\r\n"
-                        .encode()
-                    )
+                    self.cmd_handler.default_handler()
 
         print("Conexión terminada.")
         self.socket.close()
