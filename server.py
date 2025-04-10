@@ -27,8 +27,6 @@ class Server(object):
     def __init__(self, addr=DEFAULT_ADDR, port=DEFAULT_PORT,
                  directory=DEFAULT_DIR):
         print("Serving %s on %s:%s." % (directory, addr, port))
-        # FALTA: Crear socket del servidor, configurarlo, asignarlo
-        # a una dirección y puerto, etc.
         self.directory = directory
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -99,9 +97,7 @@ def main():
     # en la otra terminal: telnet 127.0.0.1 8080
 
     # la flag de dataDir solo indica a que directorio
-    # tiene acceso el cliente que se conecte,
-    # yo estuve probando con el directorio por defecto,
-    # ya que no tenemos comandos implementados
+    # tiene acceso el cliente que se conecte
 
 
 if __name__ == '__main__':

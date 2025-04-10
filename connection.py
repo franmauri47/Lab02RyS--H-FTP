@@ -36,7 +36,6 @@ class Connection(object):
         data = self.socket.recv(BUFFER_LIMIT).decode("ascii")
         self.buffer += data
 
-    # Habría que revisar cuestiones como evitar DOS, comandos inválidos, etc.
     def read_line(self):
         """
         Espera datos hasta obtener una línea completa delimitada por el
